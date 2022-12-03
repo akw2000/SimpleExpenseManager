@@ -115,29 +115,32 @@ public  class PersistentAccountDAO implements AccountDAO {
 
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
-        SQLiteDatabase db = dbUtil.getReadableDatabase();
+        SQLiteDatabase db = dbUtil.getWritableDatabase();
         final String SQL_SELECT_ACCOUNT_INFO = "SELECT  * FROM " +
                 AccountTable.TABLE_ACCOUNT + " WHERE " +
                 AccountTable.COLUMN_ACCOUNT_NO + "= ?";
         Cursor cursor = db.rawQuery(SQL_SELECT_ACCOUNT_INFO, new String[]{accountNo});
-        if(cursor.moveToFirst()) {
+        if(cursor.moveToFirst()){
             // first update the balance
-            double newBalance = cursor.getDouble(cursor.getColumnIndexOrThrow(AccountTable.COLUMN_BALANCE));
-            switch (expenseType){
+            double balance = cursor.getDouble(cursor.getColumnIndexOrThrow(AccountTable.COLUMN_BALANCE));
+            switch (expenseType) {
                 case EXPENSE:
-                    newBalance -= amount;
+                    balance -=amount;
+                    break;
                 case INCOME:
-                    newBalance += amount;
+                    balance +=amount;
+                    break;
             }
+
             ContentValues values = new ContentValues();
-            values.put(AccountTable.COLUMN_BALANCE, newBalance);
+            values.put(AccountTable.COLUMN_BALANCE,balance);
             db.update(AccountTable.TABLE_ACCOUNT, values, AccountTable.COLUMN_ACCOUNT_NO + " = ?", new String[]{accountNo});
-        } else {
-            // empty query returned
-            String msg = "The given account " + accountNo + " is invalid.";
-            cursor.close();
-            throw new InvalidAccountException(msg);
+            return;
         }
         cursor.close();
+
+        String msg = "Account " + accountNo + " is invalid.";
+        throw new InvalidAccountException(msg);
+
     }
 }
