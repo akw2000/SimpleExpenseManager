@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.DBFields.AccountTable;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.DBFields.TransactionTable;
 
+// references documentation https://developer.android.com/training/data-storage/sqlite#java
 public class DBUtil extends SQLiteOpenHelper {
     // database version to track changes to schema
     private static final int DATABASE_VERSION = 1;
@@ -53,15 +54,13 @@ public class DBUtil extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        // This database is only a cache for online data, so its upgrade policy is
-        // to simply to discard the data and start over
+        // upgrade policy is to simply to discard the data and start over
         final String SQL_DELETE_ENTRIES_ACCOUNT_TABLE =
                 "DROP TABLE IF EXISTS " + AccountTable.TABLE_ACCOUNT;
         sqLiteDatabase.execSQL(SQL_DELETE_ENTRIES_ACCOUNT_TABLE);
         final String SQL_DELETE_ENTRIES_TRANSACTION_TABLE =
                 "DROP TABLE IF EXISTS " + TransactionTable.TABLE_TRANSACTION;
         sqLiteDatabase.execSQL(SQL_DELETE_ENTRIES_TRANSACTION_TABLE);
-
         onCreate(sqLiteDatabase);
     }
     @Override

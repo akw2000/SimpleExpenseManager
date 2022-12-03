@@ -1,3 +1,6 @@
+/**
+ * It implements the AccountDAO interface and uses the DBUtil class to access the database
+ */
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl;
 
 import android.content.ContentValues;
@@ -21,6 +24,11 @@ public  class PersistentAccountDAO implements AccountDAO {
         this.dbUtil = DBUtil.getInstance(context);
     }
 
+/**
+ * It returns a list of account numbers from the database
+ * 
+ * @return A list of account numbers.
+ */
     @Override
     public List<String> getAccountNumbersList() {
         List<String> accountNumberList = new ArrayList<>();
@@ -37,6 +45,11 @@ public  class PersistentAccountDAO implements AccountDAO {
         return accountNumberList;
     }
 
+/**
+ * It returns a list of all the accounts in the database
+ * 
+ * @return A list of Account objects.
+ */
     @Override
     public List<Account> getAccountsList() {
         List<Account> accountInfoList = new ArrayList<>();
@@ -56,6 +69,12 @@ public  class PersistentAccountDAO implements AccountDAO {
         return accountInfoList;
     }
 
+/**
+ * It returns an account object if the account number is valid, otherwise it throws an exception
+ * 
+ * @param accountNo The account number of the account to be retrieved.
+ * @return The account object is being returned.
+ */
     @Override
     public Account getAccount(String accountNo) throws InvalidAccountException {
         Account account;
@@ -80,6 +99,11 @@ public  class PersistentAccountDAO implements AccountDAO {
         return account;
     }
 
+/**
+ * It takes an Account object as a parameter, and inserts it into the database
+ * 
+ * @param account The account object to be inserted into the database.
+ */
     @Override
     public void addAccount(Account account) {
         SQLiteDatabase db = dbUtil.getWritableDatabase();
@@ -95,6 +119,11 @@ public  class PersistentAccountDAO implements AccountDAO {
 
     }
 
+/**
+ * It deletes the account from the database if it exists, otherwise it throws an exception
+ * 
+ * @param accountNo The account number of the account to be removed.
+ */
     @Override
     public void removeAccount(String accountNo) throws InvalidAccountException {
         SQLiteDatabase db = dbUtil.getReadableDatabase();
@@ -102,7 +131,8 @@ public  class PersistentAccountDAO implements AccountDAO {
                 AccountTable.TABLE_ACCOUNT + " WHERE " +
                 AccountTable.COLUMN_ACCOUNT_NO + "= ?";
         Cursor cursor = db.rawQuery(SQL_SELECT_ACCOUNT_INFO, new String[]{accountNo});
-        if(cursor.moveToFirst()) {
+        if (cursor.moveToFirst()) {
+            // delete the account
             db.delete(AccountTable.TABLE_ACCOUNT, AccountTable.COLUMN_ACCOUNT_NO + " = ?", new String[]{accountNo} );
         } else {
             // empty query returned
@@ -113,6 +143,14 @@ public  class PersistentAccountDAO implements AccountDAO {
         cursor.close();
     }
 
+/**
+ * It updates the balance of an account by subtracting the amount if the expense type is EXPENSE and
+ * adding the amount if the expense type is INCOME
+ * 
+ * @param accountNo the account number
+ * @param expenseType enum type
+ * @param amount the amount of money to be added or subtracted from the account
+ */
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
         SQLiteDatabase db = dbUtil.getWritableDatabase();
@@ -123,6 +161,7 @@ public  class PersistentAccountDAO implements AccountDAO {
         if(cursor.moveToFirst()){
             // first update the balance
             double balance = cursor.getDouble(cursor.getColumnIndexOrThrow(AccountTable.COLUMN_BALANCE));
+            // based on the expense type, add or subtract the amount
             switch (expenseType) {
                 case EXPENSE:
                     balance -=amount;
@@ -131,16 +170,16 @@ public  class PersistentAccountDAO implements AccountDAO {
                     balance +=amount;
                     break;
             }
-
             ContentValues values = new ContentValues();
-            values.put(AccountTable.COLUMN_BALANCE,balance);
+            values.put(AccountTable.COLUMN_BALANCE, balance);
+            // update the balance
             db.update(AccountTable.TABLE_ACCOUNT, values, AccountTable.COLUMN_ACCOUNT_NO + " = ?", new String[]{accountNo});
-            return;
+        } else {
+            // empty query returned
+            String msg = "The given account " + accountNo + " is invalid.";
+            cursor.close();
+            throw new InvalidAccountException(msg);
         }
         cursor.close();
-
-        String msg = "Account " + accountNo + " is invalid.";
-        throw new InvalidAccountException(msg);
-
     }
 }

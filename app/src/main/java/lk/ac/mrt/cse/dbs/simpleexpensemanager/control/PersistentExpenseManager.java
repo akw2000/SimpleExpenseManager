@@ -19,9 +19,10 @@ public class PersistentExpenseManager extends ExpenseManager{
 
     @Override
     public void setup() throws ExpenseManagerException {
-        // create persistent AccountDAO and TransactionDAO set the accounts DAO
+        // create persistent AccountDAO and set the accounts DAO
         PersistentAccountDAO persistentAccountDAO = new PersistentAccountDAO(context);
         setAccountsDAO(persistentAccountDAO);
+        // create persistent TransactionDAO and set the accounts DAO
         PersistentTransactionDAO persistentTransactionDAO = new PersistentTransactionDAO(context);
         setTransactionsDAO(persistentTransactionDAO);
     }
