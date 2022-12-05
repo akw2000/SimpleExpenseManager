@@ -1,7 +1,7 @@
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl;
 
 import android.provider.BaseColumns;
-// references documentation https://developer.android.com/training/data-storage/sqlite#java
+// referenced documentation https://developer.android.com/training/data-storage/sqlite#java
 public final class DBFields implements BaseColumns {
     // make constructor private
     private DBFields(){}

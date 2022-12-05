@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -159,21 +160,26 @@ public  class PersistentAccountDAO implements AccountDAO {
                 AccountTable.COLUMN_ACCOUNT_NO + "= ?";
         Cursor cursor = db.rawQuery(SQL_SELECT_ACCOUNT_INFO, new String[]{accountNo});
         if(cursor.moveToFirst()){
-            // first update the balance
+            // first get the balance
             double balance = cursor.getDouble(cursor.getColumnIndexOrThrow(AccountTable.COLUMN_BALANCE));
-            // based on the expense type, add or subtract the amount
-            switch (expenseType) {
-                case EXPENSE:
-                    balance -=amount;
-                    break;
-                case INCOME:
-                    balance +=amount;
-                    break;
+            // update the balance only if there is sufficient amount available, else do nothing
+            if(amount<balance) {
+//                Log.d("myTag", "account " + balance + ", amount: " + amount ); // debug
+                // based on the expense type, add or subtract the amount
+                switch (expenseType) {
+                    case EXPENSE:
+                        balance -=amount;
+                        break;
+                    case INCOME:
+                        balance +=amount;
+                        break;
+                }
+
+                ContentValues values = new ContentValues();
+                values.put(AccountTable.COLUMN_BALANCE, balance);
+                // update the balance
+                int a = db.update(AccountTable.TABLE_ACCOUNT, values, AccountTable.COLUMN_ACCOUNT_NO + " = ?", new String[]{accountNo});
             }
-            ContentValues values = new ContentValues();
-            values.put(AccountTable.COLUMN_BALANCE, balance);
-            // update the balance
-            db.update(AccountTable.TABLE_ACCOUNT, values, AccountTable.COLUMN_ACCOUNT_NO + " = ?", new String[]{accountNo});
         } else {
             // empty query returned
             String msg = "The given account " + accountNo + " is invalid.";

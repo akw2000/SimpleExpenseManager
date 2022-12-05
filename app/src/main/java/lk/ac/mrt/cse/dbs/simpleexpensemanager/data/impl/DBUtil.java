@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.DBFields.AccountTable;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.DBFields.TransactionTable;
 
-// references documentation https://developer.android.com/training/data-storage/sqlite#java
+// referenced documentation https://developer.android.com/training/data-storage/sqlite#java
 public class DBUtil extends SQLiteOpenHelper {
     // database version to track changes to schema
     private static final int DATABASE_VERSION = 1;

@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,18 +44,23 @@ public class PersistentTransactionDAO implements TransactionDAO {
                 DBFields.AccountTable.COLUMN_ACCOUNT_NO + "= ?";
         Cursor cursor = db.rawQuery(SQL_SELECT_ACCOUNT_INFO, new String[]{accountNo});
         if(cursor.moveToFirst()) {
-            // Create a new map of values, where column names are the keys
-            ContentValues values = new ContentValues();
-            // format date
-            String formattedDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date);
-            values.put(TransactionTable.COLUMN_DATE, formattedDate);
-            values.put(TransactionTable.COLUMN_EXPENSE_TYPE, expenseType.toString());
-            values.put(TransactionTable.COLUMN_AMOUNT, amount);
-            values.put(TransactionTable.COLUMN_ACCOUNT_NO, accountNo);
+            double balance = cursor.getDouble(cursor.getColumnIndexOrThrow(DBFields.AccountTable.COLUMN_BALANCE));
+            // log the transaction if there is sufficient amount available, else do nothing
+            if(amount<balance) {
+//                Log.d("myTag", "transaction " + balance + ", amount: " + amount ); // debug
+                // Create a new map of values, where column names are the keys
+                ContentValues values = new ContentValues();
+                // format date
+                String formattedDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date);
+                values.put(TransactionTable.COLUMN_DATE, formattedDate);
+                values.put(TransactionTable.COLUMN_EXPENSE_TYPE, expenseType.toString());
+                values.put(TransactionTable.COLUMN_AMOUNT, amount);
+                values.put(TransactionTable.COLUMN_ACCOUNT_NO, accountNo);
 
-            // Insert the new row
-            db.insert(TransactionTable.TABLE_TRANSACTION, null, values);
-        }
+                // Insert the new row
+                db.insert(TransactionTable.TABLE_TRANSACTION, null, values);
+            }
+            }
         cursor.close();
     }
 
